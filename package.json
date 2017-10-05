@@ -1,6 +1,6 @@
 {
   "name": "html-to-vdom-parser",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Lightweight HTML to VDOM parser intended for use in the front end.",
   "main": "index.js",
   "scripts": {
