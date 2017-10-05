@@ -8,9 +8,7 @@ module.exports = function (h, html) {
     parser.readTokens({
         chars: function (tok) {
             if (current) {
-                current.innerHTML += tok.text;
-            } else {
-                nodes.push(tok.text);
+                current.innerHTML = current.innerHTML ? current.innerHTML + tok.text : tok.text;
             }
         },
         startTag: function (tok){
@@ -23,12 +21,16 @@ module.exports = function (h, html) {
                     nodes.push(node);
                 }
             } else {
-                current = {tok: tok, innerHTML: '', parent: current, children:[]};
+                current = {tok: tok, parent: current, children:[]};
             }
         },
         endTag: function (tok){
             //TODO add support for SVG
-            var node = h(current.tok.tagName, {innerHTML: current.innerHTML, attributes: Object.assign({}, current.tok.attrs, current.tok.booleanAttrs)}, current.children);
+            var props = {attributes: Object.assign({}, current.tok.attrs, current.tok.booleanAttrs)};
+            if (current.innerHTML) {
+                props.innerHTML = current.innerHTML
+            }
+            var node = h(current.tok.tagName, props, current.children);
             current = current.parent;
             if (!current) {
                 nodes.push(node);
