@@ -1,6 +1,7 @@
 var Parser = require('prescribe');
 
-module.exports = function (h, html) {
+module.exports = function (h, html, wrap) {
+    if (typeof wrap === 'undefined') wrap = true;
     var parser = new Parser(html.trim());
     var nodes = [];
     var current;
@@ -8,7 +9,9 @@ module.exports = function (h, html) {
     parser.readTokens({
         chars: function (tok) {
             if (current) {
-                current.innerHTML = current.innerHTML ? current.innerHTML + tok.text : tok.text;
+                current.children.push(tok.text);
+            } else {
+                nodes.children.push(tok.text);
             }
         },
         startTag: function (tok){
@@ -27,9 +30,12 @@ module.exports = function (h, html) {
         endTag: function (tok){
             //TODO add support for SVG
             var props = {attributes: Object.assign({}, current.tok.attrs, current.tok.booleanAttrs)};
-            if (current.innerHTML) {
-                props.innerHTML = current.innerHTML
+
+            if (current.children.every(child => typeof child === 'string')) {
+                props.innerHTML = current.children.reduce((final,child) => final + child, '');
+                current.children = [];
             }
+
             var node = h(current.tok.tagName, props, current.children);
             current = current.parent;
             if (!current) {
@@ -39,5 +45,6 @@ module.exports = function (h, html) {
             }
         }
     });
-    return nodes;
+    // debugger;
+    return nodes.length > 1 ? wrap ? h('div', nodes) : nodes : wrap ? nodes[0] : nodes;
 }
